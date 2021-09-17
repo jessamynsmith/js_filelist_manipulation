@@ -1,17 +1,44 @@
 window.onload = function() {
-  console.log('onload');
   const inputElement = document.getElementById("my_files");
   const fileNames = document.getElementById("file_names");
+  let fileList = [];
 
-  inputElement.addEventListener("change", handleFiles, false);
-  function handleFiles() {
-    const fileList = this.files; /* now you can work with the file list */
+  function removeFile(event) {
+    event.preventDefault();
+    let filename = this.dataset.filename;
+    let modifiedFileList = new DataTransfer();
+    for (let i = 0; i < fileList.length; i++) {
+      if (fileList[i].name !== filename) {
+        modifiedFileList.items.add(fileList[i]);
+      }
+    }
+
+    inputElement.files = modifiedFileList.files;
+    fileList = inputElement.files;
+    handleFiles(fileList);
+    return false;
+  }
+
+  inputElement.addEventListener("change", handleFilesListener, false);
+  function handleFilesListener() {
+    fileList = this.files;
+    handleFiles(fileList);
+  }
+  function handleFiles(fileList) {
     fileNames.textContent = '';
     for (let i = 0; i < fileList.length; i++) {
-      console.log(i, fileList[i]);
       let listElement = document.createElement("li");
+
       let textNode = document.createTextNode(fileList[i].name);
       listElement.appendChild(textNode);
+
+      let removeButton = document.createElement("button");
+      removeButton.innerHTML = "Remove&nbsp";
+      removeButton.setAttribute('type', 'button')
+      removeButton.setAttribute('data-filename', fileList[i].name)
+      removeButton.addEventListener('click', removeFile)
+      listElement.appendChild(removeButton);
+
       fileNames.appendChild(listElement);
     }
   }
